@@ -1,3 +1,4 @@
+import { Posts } from "../schemas/post.schema";
 import { MediaType } from "../schemas/post.schema";
 
 export class CreateMediaDto {
@@ -9,4 +10,6 @@ export class CreatePostDto {
   title: string;
   content: string;
   media?: CreateMediaDto[];
+  hide?:false
+  reply?:Posts[]
 }

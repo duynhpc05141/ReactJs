@@ -1,4 +1,4 @@
-import { MediaType } from "../schemas/post.schema";
+import { MediaType, Posts } from "../schemas/post.schema";
 
 export class CreateMediaDto {
   url: string;
@@ -9,4 +9,6 @@ export class updatePostDto {
   title: string;
   content: string;
   media?: CreateMediaDto[];
+  hide?:false
+  reply?:Posts[]
 }

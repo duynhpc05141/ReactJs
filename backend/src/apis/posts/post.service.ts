@@ -38,11 +38,12 @@ export class PostService {
     files: Express.Multer.File[],
   ): Promise<Posts> {
     try {
+     
       const mediaPromises = files.map(async (file) => {
         const fileStream = Readable.from(file.buffer);
         const type = getMimeTypeCategory(file.mimetype);
         const mediaType = type === 'IMAGE' ? MediaType.IMAGE : MediaType.VIDEO;
-
+  
         const mediaUrl = await this.firebaseService.uploadImageToFirebase(
           file.buffer,
           file.originalname,
@@ -55,12 +56,18 @@ export class PostService {
         return media.save();
       });
       const savedMediaArray = await Promise.all(mediaPromises);
-
+  
+   
+      const replyIds = createPostDto.reply || []; 
+  
+   
       const post = new this.postModel({
         ...createPostDto,
         media: savedMediaArray.map((media) => media._id),
+        reply: replyIds, 
         date: new Date(),
       });
+  
       return await post.save();
     } catch (error) {
       throw new InternalServerErrorException(
@@ -69,6 +76,9 @@ export class PostService {
       );
     }
   }
+  
+  
+  
 
   async updatePost(
     id: string,
@@ -110,11 +120,73 @@ export class PostService {
       );
     }
   }
+  async updateReportPost(
+    id: string,
+    updatePostDto: { hide: boolean }, 
+    files?: Express.Multer.File[],
+  ): Promise<Posts> {
+    try {
+      const post = await this.postModel.findById(id);
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+  
+     
+      if (updatePostDto.hide !== undefined) {
+        post.hide = updatePostDto.hide;
+      }
+  
+      if (files && files.length > 0) {
+        const mediaPromises = files.map(async (file) => {
+          const fileStream = Readable.from(file.buffer);
+          const type = getMimeTypeCategory(file.mimetype);
+          const mediaType =
+            type === 'IMAGE' ? MediaType.IMAGE : MediaType.VIDEO;
+          const mediaUrl = await this.firebaseService.uploadImageToFirebase(
+            file.buffer,
+            file.originalname,
+            mediaType,
+          );
+  
+          const media = new this.mediaModel({
+            url: mediaUrl,
+            type: mediaType,
+          });
+          return media.save();
+        });
+        const savedMediaArray = await Promise.all(mediaPromises);
+      }
+  
+      return await post.save();
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error updating post',
+        error.message,
+      );
+    }
+  }
+  async searchPostsByTitle(searchQuery: string): Promise<Posts[]> {
+    try {
+      let query: any = {};
+  
+      if (searchQuery) {
+        query = { ...query, title: { $regex: searchQuery, $options: 'i' } };
+      }
+  
+      return this.postModel
+        .find(query)
+        .exec();
+    } catch (error) {
+      console.error('Error searching posts by title:', error);
+      throw new InternalServerErrorException('Error searching posts by title');
+    }
+  }
+
   async findAllPost(): Promise<Posts[]> {
-    return  this.postModel.find().populate('topic').populate('media').exec();
+    return  this.postModel.find().populate('topic').populate('media').populate('reply').exec();
   }
   async findPostById(id: string): Promise<Posts> {
-    const post = await this.postModel.findById(id).populate('topic').populate('user').populate('media').exec();
+    const post = await this.postModel.findById(id).populate('topic').populate('user').populate('reply').populate('media').exec();
     if (!post) {
       throw new Error(`Course with ID ${id} not found`);
     }

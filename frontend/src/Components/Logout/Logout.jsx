@@ -29,7 +29,7 @@ import Cookies from 'js-cookie';
 				document.cookie =
 					'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
 				
-				window.location.href = '/';
+				window.location.reload()
 				
 			} catch (error) {
 				console.error('Đã xảy ra lỗi khi đăng xuất:', error);

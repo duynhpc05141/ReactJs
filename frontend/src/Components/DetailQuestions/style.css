@@ -6,3 +6,36 @@
   .ql-container {
     height: 300px;
   }
+  .ant-modal-footer >.ant-btn+.ant-btn {
+    margin-inline-start: 8px;
+    background-color:black;
+}
+
+.copy-button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #878585;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.copy-button:hover {
+  background-color: #f5f5f5;
+}
+
+pre.ql-syntax {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 10px;
+  overflow-x: auto;
+  position: relative;
+}
+
+pre.ql-syntax + .copy-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}

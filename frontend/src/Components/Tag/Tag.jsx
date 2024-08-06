@@ -21,9 +21,9 @@ function Tag() {
 
                 const postsRes = await axios.get('/posts');
                 const allPosts = postsRes.data.data;
-
+const canDisplay=allPosts.filter((post)=>post.hide===false)
             
-                const filtered = allPosts.filter(post => 
+                const filtered = canDisplay.filter(post => 
                     post.topic.length > 0 && post.topic.some(topic => topic._id === tag._id)
                 );
                 setFilteredPosts(filtered);
@@ -63,7 +63,7 @@ function Tag() {
                                                     </Link>
                                                 ))
                                             ) : (
-                                                <p className="text-gray-500">No topics available</p>
+                                                <p className="text-gray-500 ">No topics available</p>
                                             )}
                                         </div>
                                     </div>

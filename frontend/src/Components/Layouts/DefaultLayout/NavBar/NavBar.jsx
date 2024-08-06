@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCrown, faUser } from '@fortawesome/free-solid-svg-icons';
 import logo from '../../../../../public/assets/images/logo.png';
-import SearchBooks from './Search/Search';
+
 import handleLogout from '../../../Logout/Logout';
 import { Avatar, Dropdown } from "flowbite-react";
 import Cookies from 'js-cookie';
 import { isLogin } from '../../../../Service/Auth/Api';
+import SearchPosts from './Search/Search';
 
 
 function Navbar() {
@@ -37,7 +38,7 @@ function Navbar() {
 					</span>
 				</Link>
 				<div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse ">
-					<SearchBooks />
+				<SearchPosts />
 					
 					{user || token ? (
 						

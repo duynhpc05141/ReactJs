@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from '../../../../../config/axiosConfig';
 import { Link } from 'react-router-dom';
+import axiosConfig from '../../../../../config/axiosConfig';
 
-const SearchBooks = ({ onSearch }) => {
+const SearchPosts = ({ onSearch }) => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [searchResults, setSearchResults] = useState([]);
 	const [showSuggestions, setShowSuggestions] = useState(false);
@@ -27,21 +27,33 @@ const SearchBooks = ({ onSearch }) => {
 		};
 	}, []);
 
-	const delay = 500; // Độ trễ debouncing (miliseconds)
+	const delay = 500;
 
 	useEffect(() => {
 		const timeoutId = setTimeout(async () => {
-			try {
-				const response = await axios.get(`/book?search=${searchTerm}`);
-				setSearchResults(response.data.book);
-				onSearch(response.data.book);
-			} catch (error) {
-				console.error('Error searching books:', error);
+			if (searchTerm.trim()) {
+				try {
+					const response = await axiosConfig.get(
+						`/posts/search?title=${searchTerm}`,
+					);
+					
+					
+					const filteredPosts = response?.data?.data.filter(
+						(post) => !post?.reply || post?.reply.length === 0,
+					);
+					setSearchResults(filteredPosts);
+					onSearch(filteredPosts);
+				} catch (error) {
+					console.error('Error searching posts:', error);
+				}
+			} else {
+				setSearchResults([]);
 			}
 		}, delay);
 
 		return () => clearTimeout(timeoutId);
 	}, [searchTerm]);
+
 	const highlightMatches = (text, match) => {
 		const parts = text.split(new RegExp(`(${match})`, 'gi'));
 		return parts.map((part, index) => (
@@ -57,6 +69,7 @@ const SearchBooks = ({ onSearch }) => {
 			</span>
 		));
 	};
+
 	return (
 		<div ref={inputRef}>
 			<form className="mr-5 my-3 relative z-50">
@@ -73,26 +86,32 @@ const SearchBooks = ({ onSearch }) => {
 						value={searchTerm}
 						onChange={handleChange}
 						className="items-center w-full shadow-md text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-						placeholder="Tìm kiếm..."
+						placeholder="Search questions..."
 						required
 						autoComplete="off"
 					/>
 				</div>
-				{showSuggestions && (
+				{showSuggestions && searchTerm.trim() && (
 					<div className="absolute">
-						<ul className="bg-white border border-gray-100 w-full mt-2 rounded-md shadow-md">
-							{searchResults.map((book) => (
-								<div key={book._id}>
-									<Link to={`/book/${book._id}`}>
-										<li className="rounded-md text-center min-w-48  py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
-											{highlightMatches(
-												book.name,
-												searchTerm,
-											)}
-										</li>
-									</Link>
-								</div>
-							))}
+						<ul className="bg-white border border-gray-100 min-w-full mt-2 rounded-md shadow-md">
+							{searchResults.length > 0 ? (
+								searchResults.map((post) => (
+									<div key={post._id}>
+										<Link to={`/question/${post._id}`}>
+											<li className="rounded-md text-center min-w-48 py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
+												{highlightMatches(
+													post.title,
+													searchTerm,
+												)}
+											</li>
+										</Link>
+									</div>
+								))
+							) : (
+								<li className="rounded-md text-center min-w-48 py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
+									No results found
+								</li>
+							)}
 						</ul>
 					</div>
 				)}
@@ -101,4 +120,4 @@ const SearchBooks = ({ onSearch }) => {
 	);
 };
 
-export default SearchBooks;
+export default SearchPosts;

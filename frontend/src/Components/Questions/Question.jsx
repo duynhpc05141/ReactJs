@@ -10,7 +10,8 @@ function QuestionsPage() {
 const fetchQuestions = async()=>{
  try {
     const res=await axiosConfig.get('/posts')
-    setQuestions(res.data.data)
+    const canDisplay = res.data.data.filter((question) => question.hide===false && question.reply.length===0) 
+    setQuestions(canDisplay)
  } catch (error) {
     console.log(error);
     
@@ -48,7 +49,7 @@ fetchQuestions()
                                             <div className="flex gap-2">
                                                 {question && question.topic.map((tag) => (
                                                     
-                                                <Link to={`tags/${tag._id}`} className="bg-gray-200 hover:bg-gray-300 rounded-lg p-1 text-sm">{tag && tag.name }</Link>
+                                                <Link to={`/tags/${tag._id}`} className="bg-gray-200 hover:bg-gray-300 rounded-lg p-1 text-sm">{tag && tag.name }</Link>
                                                 ))}
                                               
                                             </div>

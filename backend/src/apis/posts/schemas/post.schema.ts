@@ -53,7 +53,7 @@ export class Posts {
   @Prop([
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Reply',
+      ref: 'Posts',
     },
   ])
   reply: mongoose.Schema.Types.ObjectId[];

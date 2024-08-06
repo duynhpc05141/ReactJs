@@ -11,7 +11,6 @@ import Posts from '../Components/Posts/Posts';
 import Profile from '../Components/Profile/Profile';
 import Register from '../Components/Register/Register';
 import Tags from '../Components/Tags/Tags';
-import PricingCard from '../Service/PricingCard/PricingCard';
 import PageQuestions from '../Components/Questions/page';
 import PageDetailQuestion from '../Components/DetailQuestions/page';
 import Tag from '../Components/Tag/Tag';
@@ -49,10 +48,10 @@ const publicRoutes = [
 	{ path: '/genres/:id', component: Genres },
 	{ path: '/posts', component: Posts },
 	{ path: '/posts/:id', component: DetailPosts },
-	{ path: '/pricing', component: PricingCard },
 	{ path: '/questions', component: PageQuestions },
 	{ path: '/question/:id', component: PageDetailQuestion },
 	{ path: '/ask', component: Ask },
+	{ path: '/ask/edit/:id', component: Ask },
 	{ path: '/tags', component: Tags },
 	{ path: '/tags/:id', component: Tag },
 	{ path: '/updateinfo/:id', component: Updateinfo },

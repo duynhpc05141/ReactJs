@@ -5,12 +5,12 @@ import './report.css';
 import axiosConfig from '../../config/axiosConfig';
 import getUsersFromLocalStorage from '../../utils/getDataUser';
 
-function Report() {
+function Report({idPost}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState('');
     const [canReport, setCanReport] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-    const { id: postId } = useParams();
+   
 
     useEffect(() => {
         const user = getUsersFromLocalStorage();
@@ -54,7 +54,7 @@ function Report() {
         }
 
         const reportData = {
-            post: postId,
+            post: idPost,
             user: userId,
             reason: selectedValue,
         };
@@ -78,7 +78,7 @@ function Report() {
 
     return (
         <>
-            <Button onClick={showModal} disabled={!canReport}>
+            <Button className='outline-none border-none hover:bg-transparent' onClick={showModal} disabled={!canReport}>
                 Report
             </Button>
             <Modal

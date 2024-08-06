@@ -10,6 +10,7 @@ import {
   Put,
   InternalServerErrorException,
   Delete,
+  Query,
 } from '@nestjs/common';
 import {
   FileFieldsInterceptor,
@@ -134,6 +135,33 @@ export class PostController {
       return this.postService.addTopicToReply(replyId, topicId);
     }
   // Post controller
+  @Get('search')
+  async searchPostsByTitle(@Query('title') title: string): Promise<any> {
+    try {
+      if (!title) {
+        return new ResponseData<Posts>(
+          [],
+          HttpStatus.SUCCESS,
+          'No title provided for search'
+        );
+      }
+  
+      const posts = await this.postService.searchPostsByTitle(title);
+      console.log('Filtered posts:', posts); 
+      return new ResponseData<Posts>(
+        posts,
+        HttpStatus.SUCCESS,
+        HttpMessage.SUCCESS,
+      );
+    } catch (error) {
+      return new ResponseData<Posts>(
+        null,
+        HttpStatus.ERROR,
+        'Error searching posts by title'
+      );
+    }
+  }
+
   @Post('create')
   @UseInterceptors(FileFieldsInterceptor([{ name: 'media', maxCount: 10 }]))
   createPost(
@@ -171,6 +199,21 @@ export class PostController {
       );
     }
   }
+  @Put('update-report/:id')
+  async updateReportPost(
+    @Param('id') id: string,
+    @Body() updatePostDto: { hide: boolean }, 
+  ): Promise<Posts> {
+    try {
+      return await this.postService.updateReportPost(id, updatePostDto);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Error updating post',
+        error.message,
+      );
+    }
+  }
+  
   @Get('/:id')
   async getPostById(@Param('id') id: string): Promise<ResponseData<Posts>> {
     try {
