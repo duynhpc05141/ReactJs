@@ -13,7 +13,6 @@ function DropdownQ({ postId, postUserId, onDelete }) {
   const user = getUsersFromLocalStorage();
 
   useEffect(() => {
-  
     if (user._id === postUserId) {
       setCanEdit(true);
       setCanDelete(true);
@@ -54,7 +53,7 @@ function DropdownQ({ postId, postUserId, onDelete }) {
         </Menu.Item>
       )}
       <Menu.Item key="report">
-        <Report idPost={postId}/>
+        <Report idPost={postId} />
       </Menu.Item>
       {canDelete && (
         <Menu.Item key="delete" onClick={showConfirm}>

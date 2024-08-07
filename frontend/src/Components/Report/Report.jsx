@@ -5,21 +5,35 @@ import './report.css';
 import axiosConfig from '../../config/axiosConfig';
 import getUsersFromLocalStorage from '../../utils/getDataUser';
 
-function Report({idPost}) {
+function Report({ idPost }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState('');
     const [canReport, setCanReport] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-   
+    const [postUserId, setPostUserId] = useState(null);
+
+    const user = getUsersFromLocalStorage();
 
     useEffect(() => {
-        const user = getUsersFromLocalStorage();
-        if (user && user._id) {
+        const fetchPostUserId = async () => {
+            try {
+                const res = await axiosConfig.get(`/posts/${idPost}`);
+                setPostUserId(res.data.data.user._id);
+            } catch (error) {
+                console.error('Error fetching post:', error);
+            }
+        };
+
+        fetchPostUserId();
+    }, [idPost]);
+
+    useEffect(() => {
+        if (user && user._id && user._id !== postUserId) {
             setCanReport(true);
         } else {
             setCanReport(false);
         }
-    }, []);
+    }, [user, postUserId]);
 
     const showModal = () => {
         if (canReport) {
@@ -45,23 +59,19 @@ function Report({idPost}) {
             return;
         }
 
-        const user = getUsersFromLocalStorage();
-        const userId = user ? user._id : null;
-
-        if (!userId) {
+        if (!user._id) {
             alert('User not found.');
             return;
         }
 
         const reportData = {
             post: idPost,
-            user: userId,
+            user: user._id,
             reason: selectedValue,
         };
 
         try {
-            const report = await axiosConfig.post('/reports', reportData);
-            console.log('Report sent successfully:', report);
+            await axiosConfig.post('/reports', reportData);
             notification.success({
                 message: 'Report Sent',
                 description: 'Your report has been submitted successfully.',
@@ -107,7 +117,7 @@ function Report({idPost}) {
                         { value: 'Copyright Violation', label: 'Copyright Violation' },
                     ]}
                 />
-            <p className='text-red-500'>{errorMessage}</p>
+                <p className='text-red-500'>{errorMessage}</p>
             </Modal>
         </>
     );

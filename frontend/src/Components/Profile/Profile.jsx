@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { getinfouser } from '../../Service/Auth/Api';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 function Profile() {
 	const [user, setUser] = useState();
@@ -54,21 +54,31 @@ function Profile() {
 
 	const [getdatainfo, setgetdatainfo] = useState();
 	useEffect(() => {
-		handleGetDataUserINfo()
+		handleGetDataUserINfo();
 	}, []);
-	const  handleGetDataUserINfo= async() =>{
-		if(checkauthGGFB){ 
+	const handleGetDataUserINfo = async () => {
+		if (checkauthGGFB) {
 			let datauser = localStorage.getItem('user');
-			let converdata = JSON.parse(datauser)
-			setgetdatainfo({email : converdata.email, username : converdata.displayName , avatar: converdata.photoURL})
-			/* empty */ }else{
-			
+			let converdata = JSON.parse(datauser);
+			setgetdatainfo({
+				email: converdata.email,
+				username: converdata.displayName,
+				avatar: converdata.photoURL,
+			});
+			/* empty */
+		} else {
 			let token = Cookies.get('token');
 			const decodedToken = jwtDecode(token);
 			const data = await getinfouser(decodedToken.id);
-			setgetdatainfo({email : data.email, username : data.username , createdAt : data.createdAt , avatar: data.avatar , id: data._id})
+			setgetdatainfo({
+				email: data.email,
+				username: data.username,
+				createdAt: data.createdAt,
+				avatar: data.avatar,
+				id: data._id,
+			});
 		}
-	}
+	};
 	return (
 		<div className="max-w-2xl mx-4 sm:max-w-sm md:max-w-sm lg:max-w-sm xl:max-w-sm sm:mx-auto md:mx-auto lg:mx-auto xl:mx-auto  bg-white shadow-xl rounded-lg text-gray-900">
 			<div className="rounded-t-lg h-32 overflow-hidden">
@@ -83,7 +93,7 @@ function Profile() {
 					className="object-cover object-center h-32"
 					src={
 						// (user && user[2]) ||
-						(	getdatainfo && getdatainfo.avatar) ||
+						(getdatainfo && getdatainfo.avatar) ||
 						'https://i.pinimg.com/736x/0d/64/98/0d64989794b1a4c9d89bff571d3d5842.jpg'
 					}
 					alt="Ảnh đại diện"
@@ -136,14 +146,14 @@ function Profile() {
 					<>
 						<div className="px-4 py-5 sm:px-6">
 							<h3 className="text-lg leading-6 font-medium text-gray-900">
-								Thông tin
+								Info
 							</h3>
 						</div>
 						<div className=" border-gray-200 px-4 py-5 sm:p-0">
 							<dl className="sm:divide-y sm:divide-gray-200">
 								<div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
 									<dt className="text-sm font-medium text-gray-500">
-										Tên
+										Name
 									</dt>
 									<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
 										{getdatainfo && getdatainfo.username}
@@ -154,48 +164,9 @@ function Profile() {
 										Email
 									</dt>
 									<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-									{getdatainfo && getdatainfo.email}
+										{getdatainfo && getdatainfo.email}
 									</dd>
 								</div>
-								{/* <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-									<dt className="text-sm font-medium text-gray-500">
-										Loại thành viên
-									</dt>
-									<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-										{user && user[4]
-											? 'Premium'
-											: 'Bình thường'}
-									</dd>
-								</div>
-								<div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-									<dt className="text-sm font-medium text-gray-500">
-										Gói đăng kí
-									</dt>
-									<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-										{premium && premium.package} Tháng
-									</dd>
-								</div>
-								<div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-									<dt className="text-sm font-medium text-gray-500">
-										Ngày tạo tài khoản
-									</dt>
-									<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-										{moment(
-											premium && premium.createdAt,
-										).format('DD/MM/YYYY')}
-								
-									</dd>
-								</div>
-								<div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-									<dt className="text-sm font-medium text-gray-500">
-										Thời gian hết hạn
-									</dt>
-									<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-										{moment(
-											premium && premium.expiryDate,
-										).format('DD/MM/YYYY')}
-									</dd>
-								</div> */}
 							</dl>
 						</div>
 					</>
@@ -203,36 +174,36 @@ function Profile() {
 			</div>
 			<div className="p-4 border-t mx-8 mt-2">
 				{!checkauthGGFB ? (
-					<div> <button
-					className="w-auto block mx-auto rounded-full bg-gray-900 hover:shadow-lg font-semibold text-white px-6 py-2"
-					// onClick={handleShowFollowedAuthors}
-					onClick={()=>{
-						navigate(`/updateinfo/${getdatainfo?.id}`);
-					}}
-				>
-					Thay đổi Thông tin tài khoản
-				</button>
-				<button
-					className="w-auto mt-3 block mx-auto rounded-full bg-gray-900 hover:shadow-lg font-semibold text-white px-6 py-2"
-					// onClick={handleShowFollowedAuthors}
-					onClick={()=>{
-						navigate(`/changepass/${getdatainfo?.id}`);
-					}}
-				>
-					Thay đổi mật khẩu
-				</button>
-				</div>
-					
-					
+					<div>
+						{' '}
+						<button
+							className="w-auto block mx-auto rounded-full bg-gray-900 hover:shadow-lg font-semibold text-white px-6 py-2"
+							// onClick={handleShowFollowedAuthors}
+							onClick={() => {
+								navigate(`/updateinfo/${getdatainfo?.id}`);
+							}}
+						>
+							Update Profile
+						</button>
+						<button
+							className="w-auto mt-3 block mx-auto rounded-full bg-gray-900 hover:shadow-lg font-semibold text-white px-6 py-2"
+							// onClick={handleShowFollowedAuthors}
+							onClick={() => {
+								navigate(`/changepass/${getdatainfo?.id}`);
+							}}
+						>
+							Change Password
+						</button>
+					</div>
 				) : (
 					<button
 						className="w-auto block mx-auto rounded-full bg-gray-900 hover:shadow-lg font-semibold text-white px-6 py-2"
 						// onClick={handleBackToProfile}
-						onClick={(()=>{
+						onClick={() => {
 							navigate(`/`);
-						})}
+						}}
 					>
-						Quay lại trang chủ
+						Back to home
 					</button>
 				)}
 			</div>

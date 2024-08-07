@@ -88,8 +88,8 @@ function FormPosts() {
 				if (response.status === 201 || response.status === 200) {
 					setProcessing(false);
 					const message = isEditForm
-						? 'Posts cập nhật thành công'
-						: 'Posts thêm thành công';
+						? 'Posts update successfully'
+						: 'Posts added successfully';
 					toast.success(message);
 					// setTimeout(() => navigate('/admin/posts'), 2000);
 				} else {

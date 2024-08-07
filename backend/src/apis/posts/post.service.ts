@@ -183,7 +183,7 @@ export class PostService {
   }
 
   async findAllPost(): Promise<Posts[]> {
-    return  this.postModel.find().populate('topic').populate('media').populate('reply').exec();
+    return  this.postModel.find().populate('topic').populate('user').populate('media').populate('reply').exec();
   }
   async findPostById(id: string): Promise<Posts> {
     const post = await this.postModel.findById(id).populate('topic').populate('user').populate('reply').populate('media').exec();

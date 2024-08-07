@@ -124,7 +124,7 @@ const Login = () => {
             <Form className="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96">
               <div className="flex flex-col gap-4 mb-1">
                 <h6 className="block -mb-3 font-sans text-base antialiased font-semibold leading-relaxed tracking-normal text-blue-gray-900">
-                  Name
+                  Email
                 </h6>
                 <Field
                   type="text"

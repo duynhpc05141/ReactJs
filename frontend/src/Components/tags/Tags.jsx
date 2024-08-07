@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from '../../config/axiosConfig';
 import { formatDate } from "../../utils/formatTime";
 import { Link } from "react-router-dom";
+import { TruncatedContent } from "../../utils/TruncatedContent";
 
 function Tags() {
 	const [tags, setTags] = useState([]);
@@ -106,7 +107,8 @@ function Tags() {
 							</div>
 							<div className="mb-2">
 								<p>
-									{tag && tag.description}
+								<TruncatedContent content={tag && tag.description} maxLength={150} />
+									
 								</p>
 							</div>
 							<div className="mt-auto flex justify-between text-gray-400 text-sm	">

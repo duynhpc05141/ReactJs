@@ -3,6 +3,7 @@ import axios from '../../config/axiosConfig';
 import { Link, useParams } from "react-router-dom";
 import { Image } from "antd";
 import PaginationPage from "../SharePagination/Pagination";
+import { TruncatedContent } from "../../utils/TruncatedContent";
 
 function Tag() {
     const [tags, setTags] = useState([]);
@@ -54,7 +55,7 @@ const canDisplay=allPosts.filter((post)=>post.hide===false)
                                         <Link to={`/posts/${post._id}`} className="mb-[6px] text-2xl hover:text-blue-500">
                                             {post.title}
                                         </Link>
-                                        <p className="mb-4 italic">{post.content}</p>
+                                        <TruncatedContent content={post && post.content} maxLength={150}/>
                                         <div className="flex gap-2">
                                             {post.topic.length > 0 ? (
                                                 post.topic.map(topic => (
@@ -93,7 +94,7 @@ const canDisplay=allPosts.filter((post)=>post.hide===false)
                         </div>
                     </div>
                 </div>
-                <PaginationPage /> 
+               
             </div>
         </div>
     );

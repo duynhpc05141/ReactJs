@@ -92,29 +92,27 @@ const SearchPosts = ({ onSearch }) => {
 					/>
 				</div>
 				{showSuggestions && searchTerm.trim() && (
-					<div className="absolute">
-						<ul className="bg-white border border-gray-100 min-w-full mt-2 rounded-md shadow-md">
-							{searchResults.length > 0 ? (
-								searchResults.map((post) => (
-									<div key={post._id}>
-										<Link to={`/question/${post._id}`}>
-											<li className="rounded-md text-center min-w-48 py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
-												{highlightMatches(
-													post.title,
-													searchTerm,
-												)}
-											</li>
-										</Link>
-									</div>
-								))
-							) : (
-								<li className="rounded-md text-center min-w-48 py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
-									No results found
-								</li>
-							)}
-						</ul>
+	<div className="absolute">
+		<ul className="bg-white border border-gray-100 min-w-full mt-2 rounded-md shadow-md max-h-60 min-h-20 overflow-y-auto">
+			{searchResults.length > 0 ? (
+				searchResults.map((post) => (
+					<div key={post._id}>
+						<Link to={`/question/${post._id}`}>
+							<li className="rounded-md text-center min-w-48 py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
+								{highlightMatches(post.title, searchTerm)}
+							</li>
+						</Link>
 					</div>
-				)}
+				))
+			) : (
+				<li className="rounded-md text-center min-w-48 py-1 border-b-2 border-gray-100 relative cursor-pointer hover:bg-blue-gray-50 hover:text-gray-900">
+					No results found
+				</li>
+			)}
+		</ul>
+	</div>
+)}
+
 			</form>
 		</div>
 	);
