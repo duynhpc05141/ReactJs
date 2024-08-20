@@ -9,6 +9,7 @@ import { Avatar, Dropdown } from "flowbite-react";
 import Cookies from 'js-cookie';
 import { isLogin } from '../../../../Service/Auth/Api';
 import SearchPosts from './Search/Search';
+import NotificationList from './Nofication/Notfication';
 
 
 function Navbar() {
@@ -38,6 +39,7 @@ function Navbar() {
 					</span>
 				</Link>
 				<div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse ">
+				<div className='mr-6'><NotificationList /></div>
 				<SearchPosts />
 					
 					{user || token ? (

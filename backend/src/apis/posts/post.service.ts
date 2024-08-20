@@ -1,4 +1,5 @@
 import {
+  HttpException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -6,7 +7,7 @@ import {
 import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 import { Media, MediaType, Posts, Reply, Topic } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Readable } from 'stream';
 import { getMimeTypeCategory } from 'src/utils/mimeTypeUtils';
@@ -18,6 +19,7 @@ import { updateReplyDto } from './dto/update-reply.dto';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { generateSlug } from 'src/utils/generateSlug';
 import { updateTopicDto } from './dto/update-topic.dto';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class PostService {
@@ -30,6 +32,8 @@ export class PostService {
     private readonly mediaModel: Model<Media>,
     @InjectModel(Topic.name)
     private readonly topicModel: Model<Topic>,
+    @InjectModel(User.name)
+    private readonly userModel: mongoose.Model<User>,
     private readonly firebaseService: FirebaseService,
   ) {}
   // Post service
@@ -38,7 +42,6 @@ export class PostService {
     files: Express.Multer.File[],
   ): Promise<Posts> {
     try {
-     
       const mediaPromises = files.map(async (file) => {
         const fileStream = Readable.from(file.buffer);
         const type = getMimeTypeCategory(file.mimetype);
@@ -57,18 +60,25 @@ export class PostService {
       });
       const savedMediaArray = await Promise.all(mediaPromises);
   
-   
-      const replyIds = createPostDto.reply || []; 
+      const replyIds = createPostDto.reply || [];
   
-   
       const post = new this.postModel({
         ...createPostDto,
         media: savedMediaArray.map((media) => media._id),
-        reply: replyIds, 
+        reply: replyIds,
         date: new Date(),
       });
   
-      return await post.save();
+      const savedPost = await post.save();
+      await this.userModel.findByIdAndUpdate(
+        createPostDto.user,
+        { $push: { posts: savedPost._id } },
+        { new: true }
+      ).exec();
+  
+   
+  
+      return savedPost;
     } catch (error) {
       throw new InternalServerErrorException(
         'Error creating post',
@@ -76,6 +86,8 @@ export class PostService {
       );
     }
   }
+  
+  
   
   
   
@@ -96,13 +108,13 @@ export class PostService {
           const fileStream = Readable.from(file.buffer);
           const type = getMimeTypeCategory(file.mimetype);
           const mediaType =
-          type === 'IMAGE' ? MediaType.IMAGE : MediaType.VIDEO;
+            type === 'IMAGE' ? MediaType.IMAGE : MediaType.VIDEO;
           const mediaUrl = await this.firebaseService.uploadImageToFirebase(
             file.buffer,
             file.originalname,
             mediaType,
           );
-         
+  
           const media = new this.mediaModel({
             url: mediaUrl,
             type: mediaType,
@@ -112,7 +124,17 @@ export class PostService {
         const savedMediaArray = await Promise.all(mediaPromises);
         post.media = savedMediaArray.map((media) => media._id);
       }
-      return await post.save();
+  
+      const updatedPost = await post.save();
+  
+   
+      await this.userModel.findByIdAndUpdate(
+        post.user,
+        { $set: { 'posts.$[elem]': updatedPost._id } },
+        { arrayFilters: [{ 'elem': post._id }], new: true }
+      ).exec();
+  
+      return updatedPost;
     } catch (error) {
       throw new InternalServerErrorException(
         'Error updating post',
@@ -120,6 +142,7 @@ export class PostService {
       );
     }
   }
+  
   async updateReportPost(
     id: string,
     updatePostDto: { hide: boolean }, 
@@ -195,12 +218,20 @@ export class PostService {
 
   async deletePostById(id: string): Promise<ResponseData<Posts>> {
     try {
-      const post = await this.postModel.findByIdAndDelete(id).exec();
-
+      const post = await this.postModel.findById(id);
       if (!post) {
         return new ResponseData<Posts>([], HttpStatus.ERROR, 'Post not found');
       }
-      const res = await this.postModel.findByIdAndDelete(id);
+  
+      await this.postModel.findByIdAndDelete(id).exec();
+  
+     
+      await this.userModel.findByIdAndUpdate(
+        post.user,
+        { $pull: { posts: id } },
+        { new: true }
+      ).exec();
+  
       return new ResponseData<Posts>(
         [],
         HttpStatus.SUCCESS,
@@ -211,6 +242,7 @@ export class PostService {
       throw error;
     }
   }
+  
 
   //Reply service
 
@@ -335,6 +367,8 @@ export class PostService {
   //Topic service 
   async createTopic(Topic: CreateTopicDto): Promise<Topic> {
     try {
+      const notSame=await this.topicModel.findOne({name:Topic.name});
+      if(notSame) throw new HttpException('Topic already exists', HttpStatus.CONFLICT);
         Topic.slug = generateSlug(Topic.name);
 
         const res = await this.topicModel.create(Topic);

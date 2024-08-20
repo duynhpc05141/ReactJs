@@ -57,7 +57,8 @@ function FormGenres() {
                     response = await axios.post('/posts/create-topic', requestData);
                 }
 
-                if (response.status === 201 || response.status === 200) {
+
+                if (response.data.statusCode === 201 || response.data.statusCode === 200) {
                     const message = isEditForm
                         ? 'Tag has been updated successfully'
                         : 'Tag has been added successfully';

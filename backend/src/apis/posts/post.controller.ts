@@ -11,6 +11,7 @@ import {
   InternalServerErrorException,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   FileFieldsInterceptor,
@@ -24,6 +25,8 @@ import { HttpMessage, HttpStatus } from 'src/global/globalEnum';
 import { updatePostDto } from './dto/update-post.dto';
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { updateReplyDto } from './dto/update-reply.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { AdminGuard } from 'src/auth/guards/authorization.guard';
 
 @Controller('posts')
 export class PostController {
@@ -45,7 +48,7 @@ export class PostController {
             return new ResponseData<Topic>(
                 null,
                 HttpStatus.ERROR,
-                HttpMessage.ERROR,
+                error.response.message,
             );
         }
     }
@@ -213,7 +216,7 @@ export class PostController {
       );
     }
   }
-  
+ 
   @Get('/:id')
   async getPostById(@Param('id') id: string): Promise<ResponseData<Posts>> {
     try {
@@ -227,6 +230,8 @@ export class PostController {
       return new ResponseData<Posts>([], HttpStatus.ERROR, HttpMessage.ERROR);
     }
   }
+  @UseGuards(AdminGuard)
+  @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
   removeCourse(@Param('id') id: string) {
     return this.postService.deletePostById(id);

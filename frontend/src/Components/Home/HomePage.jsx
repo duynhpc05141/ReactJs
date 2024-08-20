@@ -32,7 +32,7 @@ const HomePage = () => {
 									<div className="mt-10 flex flex-col items-center md:flex-row">
 										<Link to="/pricing">
 											<a className="mb-3 inline-flex h-12 w-full items-center justify-center rounded bg-gray-900 px-6 font-medium tracking-wide text-white shadow-md transition  focus:outline-none md:mr-4 md:mb-0 md:w-auto">
-												Login
+												Discuss
 											</a>
 										</Link>
 										<a

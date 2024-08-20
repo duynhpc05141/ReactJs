@@ -37,7 +37,7 @@ function ReadUsers() {
 
     const handleConfirmDelete = async () => {
         if (!selectedUser) return;
-        console.log(selectedUser);
+       if(selectedUser.role === "admin") return toast.error("You can't delete admin user");
         try {
             await axios.delete(`/users/${selectedUser._id}`);
             toast.success('User deleted successfully');

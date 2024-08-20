@@ -72,7 +72,7 @@ function FormUser() {
 
                 if (response.status === 201 || response.status === 200) {
                     setProcessing(false);
-                    const message = isEditForm ? 'Người dùng cập nhật thành công' : 'Người dùng thêm thành công';
+                    const message = isEditForm ? 'User updated successfully' : 'User added successfully';
                     toast.success(message);
                     setTimeout(()=>navigate('/admin/user'),2000);
                 } else {

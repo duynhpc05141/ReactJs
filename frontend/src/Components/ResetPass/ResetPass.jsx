@@ -31,7 +31,7 @@ const ResetPass = () => {
     <section>
       <div className="relative flex flex-col text-gray-700 bg-transparent shadow-md p-4 mt-2 rounded-xl bg-clip-border">
         <h4 className="text-center block font-sans text-2xl antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
-         Đổi mật khẩu mới
+       Change new password
         </h4>
         <ToastContainer />
         <Formik
@@ -43,12 +43,12 @@ const ResetPass = () => {
             <Form className="max-w-screen-lg mt-8 mb-2 w-80 sm:w-96">
               <div className="flex flex-col gap-4 mb-1">
                 <h6 className="block -mb-3 font-sans text-base antialiased font-semibold leading-relaxed tracking-normal text-blue-gray-900">
-                 mật khẩu mới
+                New password
                 </h6>
                 <Field
                   type="text"
                   name="newPassword"
-                  placeholder="Nhập mật khẩu mới"
+                  placeholder="Enter  New password"
                   className="peer h-full w-full rounded-md border border-blue-gray-200 border-t-transparent !border-t-blue-gray-200 bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:!border-t-gray-900 focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
                 />
                 <ErrorMessage
@@ -66,24 +66,24 @@ const ResetPass = () => {
                   type="submit"
                   disabled={isSubmitting}
                 >
-                 Xác nhận 
+                Confirm
                 </button>
            
                 
               </div>
               <p className="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
-                Bạn chưa có tài khoản?
+                Don't have an account?
                 <Link to="/register">
                   <a className="font-medium text-gray-900">
-                    Đăng kí
+                  Register
                   </a>
                 </Link>
               </p>
               <p className="block mt-4 font-sans text-base antialiased font-normal leading-relaxed text-center text-gray-700">
-                Bạn đã có tài khoản?
+               You already have an account?
                 <Link to="/login">
                   <a className="font-medium text-gray-900">
-                    đăng nhập
+                    Login
                   </a>
                 </Link>
               </p>

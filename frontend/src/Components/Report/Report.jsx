@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Modal, Select, notification } from 'antd';
+import { Button, Modal, Select, Input, notification } from 'antd';
 import { useParams } from 'react-router-dom';
 import './report.css';
 import axiosConfig from '../../config/axiosConfig';
@@ -8,6 +8,7 @@ import getUsersFromLocalStorage from '../../utils/getDataUser';
 function Report({ idPost }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState('');
+    const [otherReason, setOtherReason] = useState('');
     const [canReport, setCanReport] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [postUserId, setPostUserId] = useState(null);
@@ -51,11 +52,25 @@ function Report({ idPost }) {
 
     const handleChange = (value) => {
         setSelectedValue(value);
+        if (value !== 'Others') {
+            setOtherReason('');
+        }
+    };
+
+    const handleOtherReasonChange = (e) => {
+        setOtherReason(e.target.value);
     };
 
     const sendReport = async () => {
         if (!selectedValue) {
             setErrorMessage('Please select one reason.');
+            return;
+        }
+
+        const reason = selectedValue === 'Others' ? otherReason : selectedValue;
+
+        if (!reason) {
+            setErrorMessage('Please provide a reason.');
             return;
         }
 
@@ -67,7 +82,7 @@ function Report({ idPost }) {
         const reportData = {
             post: idPost,
             user: user._id,
-            reason: selectedValue,
+            reason,
         };
 
         try {
@@ -115,8 +130,17 @@ function Report({ idPost }) {
                         { value: 'Spam or Advertising', label: 'Spam or Advertising' },
                         { value: 'Out of Context', label: 'Out of Context' },
                         { value: 'Copyright Violation', label: 'Copyright Violation' },
+                        { value: 'Others', label: 'Others' },
                     ]}
                 />
+                {selectedValue === 'Others' && (
+                    <Input
+                        placeholder="Please specify the reason"
+                        value={otherReason}
+                        onChange={handleOtherReasonChange}
+                        className="mt-2"
+                    />
+                )}
                 <p className='text-red-500'>{errorMessage}</p>
             </Modal>
         </>

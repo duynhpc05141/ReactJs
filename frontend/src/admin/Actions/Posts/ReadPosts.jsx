@@ -4,13 +4,23 @@ import { Link } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPenToSquare, faTrash, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
-import ConfirmationModal from '../../Components/ConfirmationModal/ConfirmationModal';
+import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { Modal, Button, Input, Form } from 'antd';
+import { ref, set } from 'firebase/database';
+import { database } from '../../../firebase/config';
 
 function ReadPosts() {
     const [posts, setPosts] = useState([]);
     const [selected, setSelected] = useState(null);
     const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+    const [deleteReason, setDeleteReason] = useState('');
+    const [customReason, setCustomReason] = useState('');
+    const reasons = [
+        'Inappropriate Content',
+        'Spam',
+        'Duplicated Post',
+        'Other'
+    ]; // List of predefined reasons
 
     useEffect(() => {
         async function fetchData() {
@@ -24,24 +34,43 @@ function ReadPosts() {
         
         fetchData();
     }, [isConfirmationOpen]);
-    const handleDelete = (posts) => {
-        setSelected(posts);
+
+    const handleDelete = (post) => {
+        setSelected(post);
         setIsConfirmationOpen(true);
     };
+
     const handleCloseConfirmation = () => {
         setSelected(null);
         setIsConfirmationOpen(false);
+        setDeleteReason('');
+        setCustomReason('');
     };
 
     const handleConfirmDelete = async () => {
-        if (!selected) return;
-        try {
-            await axios.delete(`/posts/${selected._id}`);
-            toast.success('Posts deleted successfully');
+        if (!selected || !deleteReason) return;
+        
+        const { _id: postId, title: postTitle, user: { _id: userId } } = selected;
+        const reason = deleteReason === 'Other' ? customReason : deleteReason;
 
+        try {
+            
+            await axios.delete(`/posts/${postId}`);
+            
+           
+            await set(ref(database, `notifications/${postId}`), {
+                reason,
+                userId,
+                postId,
+                postTitle,
+                readTime: new Date().toISOString()
+            });
+
+            toast.success('Post deleted and notification saved successfully');
             handleCloseConfirmation();
         } catch (error) {
-            console.error('Error deleting posts:', error);
+            console.error('Error deleting post:', error);
+            toast.error('Error deleting post');
         }
     };
 
@@ -81,13 +110,13 @@ function ReadPosts() {
                             </th>
                             <th className="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
                                 <p className="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-                                    Hành động
+                                    Actions
                                 </p>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        {posts.map((posts, index) => (
+                        {posts.map((post, index) => (
                             <tr key={index}>
                                 <td className="p-4 border-b border-blue-gray-50">
                                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
@@ -96,43 +125,93 @@ function ReadPosts() {
                                 </td>
                                 <td className="p-4 border-b border-blue-gray-50">
                                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                                    {posts?.title?.length > 20 ? `${posts.title.substring(0, 30)}...` : posts.title}
+                                    {post?.title?.length > 20 ? `${post.title.substring(0, 30)}...` : post.title}
                                     </p>
                                 </td>
                                 <td className="p-4 border-b border-blue-gray-50">
                                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                                        {posts?.content?.length > 20 ? `${posts.content.substring(0, 20)}...` : posts.content}
+                                        {post?.content?.length > 20 ? `${post.content.substring(0, 20)}...` : post.content}
                                     </p>
                                 </td>
                                 <td className="p-4 border-b border-blue-gray-50">
                                     <p className="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                                        {posts?.date}
+                                        {post?.date}
                                     </p>
                                 </td>
                                 <td className="p-4 border-b border-blue-gray-50">
-                                    {posts.user && (<Link to={`/admin/edit-posts/${posts?._id}`}>
+                                    {post.user && (<Link to={`/admin/edit-posts/${post?._id}`}>
                                         <button
                                             type="button"
                                             className="text-white bg-blue-700 text-xs font-medium hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 rounded-lg px-2 py-2 me-1 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                                         >
-                                            <FontAwesomeIcon icon={faPenToSquare}/>
+                                            <FontAwesomeIcon icon={faPenToSquare} />
                                         </button>
                                     </Link>)}
                                     
                                     <button
-                                        onClick={() => handleDelete(posts)}
+                                        onClick={() => handleDelete(post)}
                                         className="text-white bg-red-700 text-xs font-medium hover:bg-red-800 focus:ring-4 focus:ring-red-300 rounded-lg px-2 py-2 me-1 mb-2"
                                     >
                                         <FontAwesomeIcon icon={faTrash} />
                                     </button>
 
-                                    <ConfirmationModal
-                                        isOpen={isConfirmationOpen}
-                                        onClose={handleCloseConfirmation}
-                                        onConfirm={handleConfirmDelete}
-                                        title="Confirm Delete Posts"
-                                        content={`Are you sure you want to delete the Posts "${selected?.title}"?`}
-                                    />
+                                    <Modal
+                                        title="Confirm Delete Post"
+                                        visible={isConfirmationOpen}
+                                        onCancel={handleCloseConfirmation}
+                                        footer={[
+                                            <Button key="cancel" onClick={handleCloseConfirmation}>
+                                                Cancel
+                                            </Button>,
+                                            <Button key="confirm" type="primary" onClick={handleConfirmDelete}>
+                                                Confirm
+                                            </Button>
+                                        ]}
+                                    >
+                                        <Form>
+                                            <Form.Item label="Select Reason">
+                                                <Input.Group compact>
+                                                    <Form.Item
+                                                        name="reason"
+                                                        noStyle
+                                                        rules={[{ required: true, message: 'Please select a reason!' }]}
+                                                    >
+                                                        <select
+                                                            style={{ width: '100%' }}
+                                                            value={deleteReason}
+                                                            onChange={(e) => {
+                                                                const value = e.target.value;
+                                                                setDeleteReason(value);
+                                                                if (value !== 'Other') {
+                                                                    setCustomReason('');
+                                                                }
+                                                            }}
+                                                        >
+                                                            {reasons.map((reason) => (
+                                                                <option key={reason} value={reason}>
+                                                                    {reason}
+                                                                </option>
+                                                            ))}
+                                                            <option value="Other">Other</option>
+                                                        </select>
+                                                    </Form.Item>
+                                                    {deleteReason === 'Other' && (
+                                                        <Form.Item
+                                                            name="customReason"
+                                                            rules={[{ required: true, message: 'Please provide a custom reason!' }]}
+                                                        >
+                                                            <Input
+                                                                style={{ width: '100%' }}
+                                                                placeholder="Enter custom reason"
+                                                                value={customReason}
+                                                                onChange={(e) => setCustomReason(e.target.value)}
+                                                            />
+                                                        </Form.Item>
+                                                    )}
+                                                </Input.Group>
+                                            </Form.Item>
+                                        </Form>
+                                    </Modal>
                                 </td>
                             </tr>
                         ))}

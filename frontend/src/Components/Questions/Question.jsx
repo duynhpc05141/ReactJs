@@ -54,7 +54,7 @@ function QuestionsPage() {
 											{question && question.title}
 										</Link>
 										<TruncatedContent
-											content={question.content}
+											content={question?.content}
 											maxLength={100}
 										/>
 

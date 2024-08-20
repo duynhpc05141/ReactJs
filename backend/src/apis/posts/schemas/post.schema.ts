@@ -1,5 +1,6 @@
 import mongoose, { Document } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { User } from 'src/apis/users/schemas/user.schema';
 
 export type MediaDocument = Media & Document;
 
@@ -33,8 +34,8 @@ export type PostsDocument = Posts & Document;
 
 @Schema({ timestamps: true })
 export class Posts {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  user: mongoose.Schema.Types.ObjectId;
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  user: string;
 
   @Prop({ type: String })
   title: string;

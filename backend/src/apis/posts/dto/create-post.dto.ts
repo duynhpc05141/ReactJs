@@ -1,3 +1,4 @@
+import { User } from "src/apis/users/schemas/user.schema";
 import { Posts } from "../schemas/post.schema";
 import { MediaType } from "../schemas/post.schema";
 
