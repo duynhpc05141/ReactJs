@@ -186,15 +186,16 @@ export class PostController {
       return new ResponseData<Posts[]>([], HttpStatus.ERROR, HttpMessage.ERROR);
     }
   }
-  @Put('update/:id')
+   @Put('update/:id')
   @UseInterceptors(FileFieldsInterceptor([{ name: 'media', maxCount: 10 }]))
   async updatePost(
     @Param('id') id: string,
     @Body() updatePostDto: updatePostDto,
     @UploadedFiles() files: { media?: Express.Multer.File[] },
+    @Body('userUpdate') updatedBy: string, // Thêm thông tin người thực hiện cập nhật từ header hoặc session
   ): Promise<Posts> {
     try {
-      return await this.postService.updatePost(id, updatePostDto, files.media);
+      return await this.postService.updatePost(id, updatePostDto, files.media, updatedBy);
     } catch (error) {
       throw new InternalServerErrorException(
         'Error updating post',
@@ -233,8 +234,8 @@ export class PostController {
   @UseGuards(AdminGuard)
   @UseGuards(AuthGuard('jwt'))
   @Delete(':id')
-  removeCourse(@Param('id') id: string) {
-    return this.postService.deletePostById(id);
+  removePost(@Param('id') id: string, @Body('userUpdate') deletedBy: string) {
+    return this.postService.deletePostById(id, deletedBy);
   }
 
   //Reply controller
@@ -263,12 +264,14 @@ export class PostController {
   @UseInterceptors(FileFieldsInterceptor([{ name: 'media', maxCount: 10 }]))
   async updateReply(
     @Param('id') id: string,
+    @Body('updateUser')  updateBy,
     @Body() updateReplyDto: updateReplyDto,
     @UploadedFiles() files: { media?: Express.Multer.File[] },
   ): Promise<Reply> {
     try {
       return await this.postService.updateReply(
         id,
+        updateBy,
         updateReplyDto,
         files.media,
       );
@@ -307,7 +310,10 @@ export class PostController {
     }
   }
   @Delete('replies/:id')
-  removeReply(@Param('id') id: string) {
-    return this.postService.deleteReplyById(id);
+  removeReply(
+    @Param('id') id: string,
+    @Body('deletedBy') deletedBy?: string,
+  ) {
+    return this.postService.deleteReplyById(id, deletedBy);
   }
 }

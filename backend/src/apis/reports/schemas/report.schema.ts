@@ -12,7 +12,8 @@ export class Report {
   @Prop({ type: String, required: true })
   reason: string;
 
-
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  updatedBy?: string;
   @Prop({ type: Date, default: Date.now })
   reportedAt: Date;
 }

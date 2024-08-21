@@ -33,7 +33,7 @@ export const MediaSchema = SchemaFactory.createForClass(Media);
 export type PostsDocument = Posts & Document;
 
 @Schema({ timestamps: true })
-export class Posts {
+export class Posts extends Document {
   @Prop({ type: 'ObjectId', ref: 'User' })
   user: string;
 
@@ -58,8 +58,10 @@ export class Posts {
     },
   ])
   reply: mongoose.Schema.Types.ObjectId[];
+
   @Prop({ type: String })
   slug: string;
+
   @Prop([
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -67,6 +69,7 @@ export class Posts {
     },
   ])
   topic: mongoose.Schema.Types.ObjectId[];
+
   @Prop([
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -77,8 +80,20 @@ export class Posts {
 
   @Prop({ type: Date, default: Date.now })
   date: Date;
+
   @Prop({ default: false })
   hide?: Boolean;
+
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  updatedBy?: string;
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  deleteBy?: string;
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  deletedBy?: string;
+  @Prop({ type: Date })
+  deletedAt?: Date;
+  @Prop({ type: Number, default: 0 })
+  timeReport: number;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Posts);
@@ -120,7 +135,20 @@ export class Reply {
       ref: 'Topic',
     },
   ])
+ 
   topic: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({ default: false })
+  hide?: Boolean;
+
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  updatedBy?: string;
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  deleteBy?: string;
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  deletedBy?: string;
+  @Prop({ type: Date })
+  deletedAt?: Date;
   @Prop({ type: Date, default: Date.now })
   date: Date;
 }

@@ -23,15 +23,12 @@ export class ReportController {
   }
 
   @Put(':id')
-  async updateReport(@Param('id') id: string, @Body() updateReportDto: UpdateReportDto) {
-    try {
-      return await this.reportService.updateReport(id, updateReportDto);
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-      throw new Error('An error occurred while updating the report.');
-    }
+  async updateReport(
+    @Param('id') id: string,
+    @Body() updateReportDto: UpdateReportDto,
+    @Body('updatedBy') updatedBy: string, // Assuming you send this in the request body
+  ) {
+    return this.reportService.updateReport(id, updateReportDto, updatedBy);
   }
   @Delete(':id')
   async deleteReport(@Param('id') id: string) {

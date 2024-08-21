@@ -7,7 +7,7 @@ import {
 import FirebaseService from 'src/providers/storage/firebase/firebase.service';
 import { Media, MediaType, Posts, Reply, Topic } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Readable } from 'stream';
 import { getMimeTypeCategory } from 'src/utils/mimeTypeUtils';
@@ -94,8 +94,9 @@ export class PostService {
 
   async updatePost(
     id: string,
-    updatePostDto: updatePostDto,
+    updatePostDto: UpdatePostDto,
     files?: Express.Multer.File[],
+    updatedBy?: string, // Thêm tham số để nhận ID của người thực hiện cập nhật
   ): Promise<Posts> {
     try {
       const post = await this.postModel.findById(id);
@@ -114,7 +115,7 @@ export class PostService {
             file.originalname,
             mediaType,
           );
-  
+
           const media = new this.mediaModel({
             url: mediaUrl,
             type: mediaType,
@@ -124,16 +125,20 @@ export class PostService {
         const savedMediaArray = await Promise.all(mediaPromises);
         post.media = savedMediaArray.map((media) => media._id);
       }
-  
+
+      // Cập nhật thông tin người thực hiện cập nhật
+      if (updatedBy) {
+        post.updatedBy = new Types.ObjectId(updatedBy);
+      }
+
       const updatedPost = await post.save();
-  
-   
+
       await this.userModel.findByIdAndUpdate(
         post.user,
         { $set: { 'posts.$[elem]': updatedPost._id } },
         { arrayFilters: [{ 'elem': post._id }], new: true }
       ).exec();
-  
+
       return updatedPost;
     } catch (error) {
       throw new InternalServerErrorException(
@@ -216,16 +221,24 @@ export class PostService {
     return post;
   }
 
-  async deletePostById(id: string): Promise<ResponseData<Posts>> {
+  async deletePostById(
+    id: string,
+    deletedBy: string, // Thêm tham số để nhận ID của người xóa
+  ): Promise<ResponseData<Posts>> {
     try {
       const post = await this.postModel.findById(id);
       if (!post) {
         return new ResponseData<Posts>([], HttpStatus.ERROR, 'Post not found');
       }
   
-      await this.postModel.findByIdAndDelete(id).exec();
+      post.deletedBy = new Types.ObjectId(deletedBy);
+      post.deletedAt = new Date();
+      post.hide = true; 
   
-     
+      // Lưu thông tin bài viết đã cập nhật
+      await post.save();
+  
+      // Cập nhật thông tin bài viết trong người dùng
       await this.userModel.findByIdAndUpdate(
         post.user,
         { $pull: { posts: id } },
@@ -235,15 +248,17 @@ export class PostService {
       return new ResponseData<Posts>(
         [],
         HttpStatus.SUCCESS,
-        'Delete Post successfully',
+        'Post hidden successfully',
       );
     } catch (error) {
-      console.error('Error deleting post:', error);
-      throw error;
+      console.error('Error hiding post:', error);
+      throw new InternalServerErrorException(
+        'Error hiding post',
+        error.message,
+      );
     }
-  }
   
-
+  }
   //Reply service
 
   async createReply(postId: string, createReplyDto: CreateReplyDto, files: Express.Multer.File[]): Promise<Reply> {
@@ -294,6 +309,7 @@ export class PostService {
 
   async updateReply(
     id: string,
+    updatedBy : string,
     updateReplyDto: updateReplyDto,
     files?: Express.Multer.File[],
   ): Promise<Reply> {
@@ -320,6 +336,10 @@ export class PostService {
         });
         const savedMediaArray = await Promise.all(mediaPromises);
         reply.media = savedMediaArray.map((media) => media._id);
+      
+      }
+      if (updatedBy) {
+        reply.updatedBy = new Types.ObjectId(updatedBy);
       }
       return await reply.save();
     } catch (error) {
@@ -345,22 +365,36 @@ export class PostService {
     return reply;
   }
 
-  async deleteReplyById(id: string): Promise<ResponseData<Reply>> {
+  async deleteReplyById(
+    id: string,
+    deletedBy?: string, // Optional parameter to track who deleted the reply
+  ): Promise<ResponseData<Reply>> {
     try {
-      const post = await this.replyModel.findByIdAndDelete(id).exec();
-
-      if (!post) {
+      const reply = await this.replyModel.findById(id);
+      if (!reply) {
         return new ResponseData<Reply>([], HttpStatus.ERROR, 'Reply not found');
       }
-      const res = await this.replyModel.findByIdAndDelete(id);
+  
+      reply.deletedAt = new Date();
+      if (deletedBy) {
+        reply.deletedBy = new Types.ObjectId(deletedBy);
+      }
+      reply.hide = true; // Optional: If you have a `hide` field to mark the reply as hidden
+  
+      // Save the updated reply
+      await reply.save();
+  
       return new ResponseData<Reply>(
         [],
         HttpStatus.SUCCESS,
-        'Delete reply successfully',
+        'Reply hidden successfully',
       );
     } catch (error) {
-      console.error('Error deleting Reply:', error);
-      throw error;
+      console.error('Error hiding reply:', error);
+      throw new InternalServerErrorException(
+        'Error hiding reply',
+        error.message,
+      );
     }
   }
 
